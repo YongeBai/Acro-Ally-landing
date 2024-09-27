@@ -5,6 +5,7 @@ import autoprefixer from 'autoprefixer'
 
 export default defineConfig({
   plugins: [react()],
+  base: '/acro-ally-landing/',
   css: {
     postcss: {
       plugins: [tailwindcss, autoprefixer],
