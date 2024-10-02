@@ -1,41 +1,6 @@
 import React from 'react';
-import axios from 'axios';
 
 const Hero: React.FC = () => {
-  const handleGetStarted = async () => {
-    const quantity = parseInt(prompt('Enter the number of license keys you want to purchase:', '1') || '1', 10);
-    const email = prompt('Enter your email address:', '');
-
-    if (isNaN(quantity) || quantity < 1) {
-      alert('Please enter a valid number.');
-      return;
-    }
-
-    if (!email || !/\S+@\S+\.\S+/.test(email)) {
-      alert('Please enter a valid email address.');
-      return;
-    }
-
-    try {
-      const response = await axios.post('http://localhost:4242/create-checkout-session', {
-        quantity,
-        email,
-      });
-      const { id } = response.data;
-      const stripe = await stripePromise;
-
-      if (stripe) {
-        const { error } = await stripe.redirectToCheckout({ sessionId: id });
-        if (error) {
-          alert(error.message);
-        }
-      }
-    } catch (error) {
-      console.error('Error creating checkout session:', error);
-      alert('Something went wrong. Please try again.');
-    }
-  };
-
   return (
     <section id="hero" className="mb-16 text-center">
       <h2 className="text-3xl font-semibold mb-6">Get Everyone on the Same Page</h2>
