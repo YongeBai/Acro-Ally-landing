@@ -1,30 +1,38 @@
 import React from 'react';
-import { loadStripe, Stripe } from '@stripe/stripe-js';
-
-const stripePromise: Promise<Stripe | null> = loadStripe('your_stripe_publishable_key');
+import axios from 'axios';
 
 const Hero: React.FC = () => {
   const handleGetStarted = async () => {
     const quantity = parseInt(prompt('Enter the number of license keys you want to purchase:', '1') || '1', 10);
+    const email = prompt('Enter your email address:', '');
+
     if (isNaN(quantity) || quantity < 1) {
       alert('Please enter a valid number.');
       return;
     }
 
-    const response = await fetch('/create-checkout-session', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ quantity }),
-    });
+    if (!email || !/\S+@\S+\.\S+/.test(email)) {
+      alert('Please enter a valid email address.');
+      return;
+    }
 
-    const { id } = await response.json();
-    const stripe = await stripePromise;
+    try {
+      const response = await axios.post('http://localhost:4242/create-checkout-session', {
+        quantity,
+        email,
+      });
+      const { id } = response.data;
+      const stripe = await stripePromise;
 
-    if (stripe) {
-      const { error } = await stripe.redirectToCheckout({ sessionId: id });
-      if (error) {
-        alert(error.message);
+      if (stripe) {
+        const { error } = await stripe.redirectToCheckout({ sessionId: id });
+        if (error) {
+          alert(error.message);
+        }
       }
+    } catch (error) {
+      console.error('Error creating checkout session:', error);
+      alert('Something went wrong. Please try again.');
     }
   };
 
@@ -35,15 +43,17 @@ const Hero: React.FC = () => {
         <iframe
           className="w-full h-full"
           src="https://www.youtube.com/embed/your-video-id"
-          frameBorder="0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
           title="Acro-Ally Video"
         ></iframe>
       </div>
-      <button onClick={handleGetStarted} className="get-started-button inline-block bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300">
+      <a
+        href="https://buy.stripe.com/7sI4jG2D18TW18I7ss"
+        className="get-started-button inline-block bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300"
+      >
         Get Acro-ally Now
-      </button>
+      </a>
     </section>
   );
 };

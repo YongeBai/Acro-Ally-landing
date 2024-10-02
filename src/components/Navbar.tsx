@@ -1,30 +1,33 @@
 import React from 'react';
-import { loadStripe, Stripe } from '@stripe/stripe-js';
-
-const stripePromise: Promise<Stripe | null> = loadStripe('your_stripe_publishable_key');
+import axios from 'axios';
 
 const Navbar: React.FC = () => {
   const handleGetStarted = async () => {
-    const quantity = parseInt(prompt('Enter the number of license keys you want to purchase:', '1') || '1', 10);
-    if (isNaN(quantity) || quantity < 1) {
-      alert('Please enter a valid number.');
+    const quantity = 1; // Default quantity or retrieve as needed
+    const email = prompt('Enter your email address:', '');
+
+    if (!email || !/\S+@\S+\.\S+/.test(email)) {
+      alert('Please enter a valid email address.');
       return;
     }
 
-    const response = await fetch('/create-checkout-session', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ quantity }),
-    });
+    try {
+      const response = await axios.post('http://localhost:4242/create-checkout-session', {
+        quantity,
+        email,
+      });
+      const { id } = response.data;
+      const stripe = await stripePromise;
 
-    const { id } = await response.json();
-    const stripe = await stripePromise;
-
-    if (stripe) {
-      const { error } = await stripe.redirectToCheckout({ sessionId: id });
-      if (error) {
-        alert(error.message);
+      if (stripe) {
+        const { error } = await stripe.redirectToCheckout({ sessionId: id });
+        if (error) {
+          alert(error.message);
+        }
       }
+    } catch (error) {
+      console.error('Error creating checkout session:', error);
+      alert('Something went wrong. Please try again.');
     }
   };
 
@@ -39,9 +42,12 @@ const Navbar: React.FC = () => {
           <li><a href="#benefits" className="text-gray-300 hover:text-blue-400">Benefits</a></li>
           <li><a href="#features" className="text-gray-300 hover:text-blue-400">Features</a></li>
           <li>
-            <button onClick={handleGetStarted} className="get-started-button bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-300">
+            <a
+              href="https://buy.stripe.com/7sI4jG2D18TW18I7ss"
+              className="get-started-button bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-300"
+            >
               Get Started
-            </button>
+            </a>
           </li>
         </ul>
       </div>
